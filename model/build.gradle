@@ -1,0 +1,11 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+}
+
+apply from: '../dependencies.gradle'
+dependencies {
+    implementation project(":common")
+    kapt "androidx.room:room-compiler:2.4.1"
+}

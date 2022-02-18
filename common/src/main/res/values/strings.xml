@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_finish_restart">RESTART</string>
+    <string name="update_finish_tips">Please restart to apply the update</string>
+</resources>
