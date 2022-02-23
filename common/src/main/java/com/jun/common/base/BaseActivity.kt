@@ -2,22 +2,20 @@ package com.jun.common.base
 
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import com.blankj.utilcode.util.PermissionUtils
-import com.jun.common.R
+import androidx.viewbinding.ViewBinding
 
-abstract class BaseActivity : AppCompatActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
-    }
+abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
 
-    override fun onStart() {
-        super.onStart()
+    lateinit var mBinding: VB
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        mBinding = getViewBinding();
+        setContentView(mBinding.root)
+        init()
     }
 
     fun toast(msg: String) {
@@ -28,19 +26,8 @@ abstract class BaseActivity : AppCompatActivity() {
         Toast.makeText(this, res, Toast.LENGTH_LONG).show()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
+    abstract fun getViewBinding(): VB
 
-    fun requestPermission(constants: String, callback: () -> Unit) {
-        PermissionUtils.permission(constants)
-            .callback(object : PermissionUtils.SimpleCallback {
-                override fun onGranted() {
-                    callback.invoke()
-                }
-
-                override fun onDenied() {}
-            }).request()
-    }
+    abstract fun init()
 
 }
