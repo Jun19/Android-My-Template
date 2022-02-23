@@ -9,12 +9,12 @@ import androidx.viewbinding.ViewBinding
 
 abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
 
-    lateinit var mBinding: VB
+    lateinit var vb: VB
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mBinding = getViewBinding();
-        setContentView(mBinding.root)
+        vb = getViewBinding();
+        setContentView(vb.root)
         init()
     }
 

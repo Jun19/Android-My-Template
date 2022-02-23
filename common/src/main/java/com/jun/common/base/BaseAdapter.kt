@@ -6,7 +6,7 @@ import androidx.viewbinding.ViewBinding
 import com.chad.library.adapter.base.BaseQuickAdapter
 
 
-abstract class BaseBindingAdapter<T, VB : ViewBinding>(data: MutableList<T>? = null) :
+abstract class BaseAdapter<T, VB : ViewBinding>(data: MutableList<T>? = null) :
     BaseQuickAdapter<T, VBViewHolder<VB>>(0, data) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VBViewHolder<VB> {

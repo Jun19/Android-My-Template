@@ -20,4 +20,4 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 #base
--keep public class com.jun.common.base.BaseActivity
+-keep public class com.jun.common.base.**

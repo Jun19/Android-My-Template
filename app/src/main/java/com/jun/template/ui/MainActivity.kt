@@ -21,7 +21,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         observe(mainViewModel.tempLocal, ::handleTempLocal)
         observe(mainViewModel.tempRemote, ::handleTempRemote)
 
-        mBinding.tvRemote.postDelayed({
+        vb.tvRemote.postDelayed({
             mainViewModel.getTempData()
             mainViewModel.fetchTempData()
         }, 1500)
@@ -31,13 +31,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     private fun handleTempLocal(resource: Resource<Temp>) {
         when (resource) {
             is Resource.Loading -> {
-                mBinding.tvLocal.text = "loading..."
+                vb.tvLocal.text = "loading..."
             }
             is Resource.Success -> {
-                mBinding.tvLocal.text = resource.data.toString()
+                vb.tvLocal.text = resource.data.toString()
             }
             is Resource.Failure -> {
-                mBinding.tvLocal.text = resource.dataException.toString()
+                vb.tvLocal.text = resource.dataException.toString()
             }
         }
     }
@@ -45,13 +45,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     private fun handleTempRemote(resource: Resource<Temp>) {
         when (resource) {
             is Resource.Loading -> {
-                mBinding.tvRemote.text = "loading..."
+                vb.tvRemote.text = "loading..."
             }
             is Resource.Success -> {
-                mBinding.tvRemote.text = resource.data.toString()
+                vb.tvRemote.text = resource.data.toString()
             }
             is Resource.Failure -> {
-                mBinding.tvRemote.text = resource.dataException.toString()
+                vb.tvRemote.text = resource.dataException.toString()
             }
         }
     }

@@ -11,9 +11,9 @@ import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 
 
-abstract class BaseBindingFragment<VB : ViewBinding> : Fragment() {
+abstract class BaseFragment<VB : ViewBinding> : Fragment() {
 
-    lateinit var mBinding: VB
+    lateinit var vb: VB
     lateinit var mContext: Context
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -25,8 +25,8 @@ abstract class BaseBindingFragment<VB : ViewBinding> : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        mBinding = getBinding(inflater, container)
-        return mBinding.root
+        vb = getBinding(inflater, container)
+        return vb.root
     }
 
 
