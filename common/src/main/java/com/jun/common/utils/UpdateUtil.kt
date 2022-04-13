@@ -29,6 +29,7 @@ object UpdateUtil : LifecycleObserver {
     private var mSnackbar: Snackbar? = null
     private const val REQ_CODE_VERSION_UPDATE = 530
     private var mAvailableVersionCode by Delegates.notNull<Int>()
+    private var mActivity: AppCompatActivity? = null
 
     private var mHandler: Handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
@@ -54,6 +55,7 @@ object UpdateUtil : LifecycleObserver {
     }
 
     private fun startUpdateForType(activity: AppCompatActivity, @AppUpdateType updateType: Int) {
+        mActivity = activity
         activity.lifecycle.addObserver(this)
         mAppUpdateManager = AppUpdateManagerFactory.create(activity)
         val appUpdateInfoTask: Task<AppUpdateInfo> = mAppUpdateManager!!.appUpdateInfo
@@ -83,6 +85,9 @@ object UpdateUtil : LifecycleObserver {
     private fun popupSnackbarForCompleteUpdate() {
         val currentActivity = ActivityLifecycleTracker.getCurrentActivity()
         currentActivity?.let {
+            if (mActivity != it) {
+                return
+            }
             val rootView: View =
                 currentActivity.window.decorView.findViewById(android.R.id.content)
             mSnackbar = Snackbar.make(
@@ -103,6 +108,7 @@ object UpdateUtil : LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onDestroy() {
+        mActivity = null
         mInstallStateUpdatedListener?.let { mAppUpdateManager?.unregisterListener(it) }
     }
 }
