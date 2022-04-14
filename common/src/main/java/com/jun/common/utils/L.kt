@@ -1,8 +1,7 @@
 package com.jun.common.utils
 
-import com.jun.common.BuildConfig.DEBUG
-import com.jun.common.Constants
-import com.orhanobut.logger.Logger
+import com.jun.common.BuildConfig
+import com.orhanobut.logger.Printer
 
 /**
  * logger管理
@@ -12,28 +11,36 @@ import com.orhanobut.logger.Logger
  */
 object L {
 
+
     fun d(msg: String) {
-        if (DEBUG) {
-            Logger.d(Constants.LOGGER_TAG_NAME, msg)
+        if (BuildConfig.DEBUG) {
+            com.orhanobut.logger.Logger.d(msg)
         }
     }
 
     fun d(tag: String, msg: String) {
-        if (DEBUG) {
-            Logger.d(tag, "msg: ")
+        if (BuildConfig.DEBUG) {
+            com.orhanobut.logger.Logger.t(tag).d(msg)
         }
     }
 
     fun e(tagName: String, msg: String) {
-        if (DEBUG) {
-            Logger.e(tagName, msg)
+        if (BuildConfig.DEBUG) {
+            com.orhanobut.logger.Logger.t(tagName).e(msg)
         }
     }
 
     fun e(msg: String) {
-        if (DEBUG) {
-            Logger.e(Constants.LOGGER_TAG_NAME, msg)
+        if (BuildConfig.DEBUG) {
+            com.orhanobut.logger.Logger.e(msg)
         }
     }
 
+    fun t(tagName: String): Printer? {
+        return if (BuildConfig.DEBUG) {
+            com.orhanobut.logger.Logger.t(tagName)
+        } else {
+            null
+        }
+    }
 }

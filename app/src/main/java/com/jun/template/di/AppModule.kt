@@ -62,7 +62,7 @@ val dataModule = module {
 }
 val viewModelModule = module {
     //viewmodel
-    single { MainViewModel(get())}
+    factory { MainViewModel(get()) }
 }
 
 val allModules = appModule + dataModule + viewModelModule
