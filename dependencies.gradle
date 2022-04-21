@@ -44,8 +44,6 @@ dependencies {
     implementation "androidx.room:room-runtime:2.4.1"
     implementation "androidx.room:room-ktx:2.4.1"
     implementation 'com.blankj:utilcodex:1.30.6'
-    //coil
-    implementation 'io.coil-kt:coil:1.4.0'
     //adapter
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.6'
     //multidex
@@ -82,4 +80,7 @@ dependencies {
     //in app update
     implementation 'com.google.android.play:core:1.10.3'
     implementation 'com.google.android.play:core-ktx:1.8.1'
+    //glide
+    implementation 'com.github.bumptech.glide:glide:4.13.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.13.0'
 }

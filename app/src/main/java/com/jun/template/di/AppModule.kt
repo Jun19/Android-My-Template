@@ -10,9 +10,7 @@ import com.jun.model.remote.api.TempService
 import com.jun.model.repositorysource.TempRepository
 import com.jun.viewmodel.MainViewModel
 import kotlinx.coroutines.Dispatchers
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -28,18 +26,8 @@ val appModule = module {
     single {
         val httpLoggingInterceptor =
             HttpLoggingInterceptor { message: String -> L.d("http log: $message") }
+        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
         OkHttpClient.Builder()
-//            .addInterceptor(httpLoggingInterceptor)
-            .addInterceptor(Interceptor { chain -> // 拿到我们的请求
-                val original = chain.request()
-                // 重新进行build
-                val builder: Request.Builder = original.newBuilder()
-                //  builder.addHeader("Content-Type", "application/json")
-                val newRequest: Request = builder.build()
-                L.d("http ${newRequest.url}")
-                // 返回
-                chain.proceed(newRequest)
-            })
             .build()
     }
     single {
