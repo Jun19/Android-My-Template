@@ -28,6 +28,7 @@ val appModule = module {
             HttpLoggingInterceptor { message: String -> L.d("http log: $message") }
         httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
         OkHttpClient.Builder()
+            .addInterceptor(httpLoggingInterceptor)
             .build()
     }
     single {
