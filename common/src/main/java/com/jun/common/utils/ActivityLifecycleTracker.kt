@@ -1,100 +1,75 @@
-package com.jun.common.utils;
+package com.jun.common.utils
 
-import android.app.Activity;
-import android.app.Application;
-import android.os.Bundle;
+import android.app.Activity
+import android.app.Application
+import android.os.Bundle
+import java.lang.ref.WeakReference
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import java.lang.ref.WeakReference;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-public class ActivityLifecycleTracker {
-    private static AtomicBoolean tracking = new AtomicBoolean(false);
-    private static WeakReference<Activity> currActivity;
-    private static int activityReferences = 0;
-    private static AtomicInteger foregroundActivityCount = new AtomicInteger(0);
-
-    public static void startTracking(Application application) {
+object ActivityLifecycleTracker {
+    private val tracking = AtomicBoolean(false)
+    private var currActivity: WeakReference<Activity>? = null
+    private var activityReferences = 0
+    private val foregroundActivityCount = AtomicInteger(0)
+    fun startTracking(application: Application) {
         if (!tracking.compareAndSet(false, true)) {
-            return;
+            return
         }
-        application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-            @Override
-            public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-                ActivityLifecycleTracker.onActivityCreated(activity);
+        application.registerActivityLifecycleCallbacks(object :
+            Application.ActivityLifecycleCallbacks {
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                onActivityCreated(activity)
             }
 
-            @Override
-            public void onActivityStarted(@NonNull Activity activity) {
-                ActivityLifecycleTracker.activityReferences++;
-                ActivityLifecycleTracker.onActivityStarted(activity);
+            override fun onActivityStarted(activity: Activity) {
+                activityReferences++
+                ActivityLifecycleTracker.onActivityStarted(activity)
             }
 
-            @Override
-            public void onActivityResumed(@NonNull Activity activity) {
-                ActivityLifecycleTracker.onActivityResumed(activity);
+            override fun onActivityResumed(activity: Activity) {
+                ActivityLifecycleTracker.onActivityResumed(activity)
             }
 
-            @Override
-            public void onActivityPaused(@NonNull Activity activity) {
-                ActivityLifecycleTracker.onActivityPaused(activity);
+            override fun onActivityPaused(activity: Activity) {
+                ActivityLifecycleTracker.onActivityPaused(activity)
             }
 
-            @Override
-            public void onActivityStopped(@NonNull Activity activity) {
-                ActivityLifecycleTracker.onActivityStopped(activity);
-                ActivityLifecycleTracker.activityReferences--;
+            override fun onActivityStopped(activity: Activity) {
+                ActivityLifecycleTracker.onActivityStopped(activity)
+                activityReferences--
             }
 
-            @Override
-            public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-                ActivityLifecycleTracker.onActivitySaveInstanceState(activity);
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+                onActivitySaveInstanceState(activity)
             }
 
-            @Override
-            public void onActivityDestroyed(@NonNull Activity activity) {
-                ActivityLifecycleTracker.onActivityDestroyed(activity);
+            override fun onActivityDestroyed(activity: Activity) {
+                ActivityLifecycleTracker.onActivityDestroyed(activity)
             }
-        });
+        })
     }
 
-    public static boolean isInBackground() {
-        return 0 == activityReferences;
+    val isInBackground: Boolean
+        get() = 0 == activityReferences
+    val currentActivity: Activity?
+        get() = if (currActivity != null) currActivity!!.get() else null
+
+    private fun onActivityCreated(activity: Activity) {}
+    private fun onActivityStarted(activity: Activity) {}
+    private fun onActivityResumed(activity: Activity) {
+        currActivity = WeakReference(activity)
+        foregroundActivityCount.incrementAndGet()
     }
 
-    public static Activity getCurrentActivity() {
-        return currActivity != null ? currActivity.get() : null;
-    }
-
-    private static void onActivityCreated(Activity activity) {
-    }
-
-    private static void onActivityStarted(Activity activity) {
-    }
-
-    private static void onActivityResumed(Activity activity) {
-        currActivity = new WeakReference<>(activity);
-        foregroundActivityCount.incrementAndGet();
-    }
-
-    private static void onActivityPaused(Activity activity) {
-        int count = foregroundActivityCount.decrementAndGet();
+    private fun onActivityPaused(activity: Activity) {
+        val count = foregroundActivityCount.decrementAndGet()
         if (count < 0) {
-            foregroundActivityCount.set(0);
+            foregroundActivityCount.set(0)
         }
     }
 
-    private static void onActivityStopped(Activity activity) {
-    }
-
-    private static void onActivitySaveInstanceState(Activity activity) {
-    }
-
-    private static void onActivityDestroyed(Activity activity) {
-    }
-
-
+    private fun onActivityStopped(activity: Activity) {}
+    private fun onActivitySaveInstanceState(activity: Activity) {}
+    private fun onActivityDestroyed(activity: Activity) {}
 }

@@ -1,7 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-
+    id 'kotlin-kapt'
+    id 'kotlin-parcelize'
 }
 apply from: '../dependencies.gradle'
 android {
@@ -41,7 +42,6 @@ android {
 }
 
 dependencies {
-    implementation project(':model')
-    implementation project(":viewmodel")
     implementation project(":common")
+    kapt "androidx.room:room-compiler:2.4.3"
 }

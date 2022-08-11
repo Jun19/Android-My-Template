@@ -83,7 +83,7 @@ object UpdateUtil : LifecycleObserver {
     }
 
     private fun popupSnackbarForCompleteUpdate() {
-        val currentActivity = ActivityLifecycleTracker.getCurrentActivity()
+        val currentActivity = ActivityLifecycleTracker.currentActivity
         currentActivity?.let {
             if (mActivity != it) {
                 return

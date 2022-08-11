@@ -12,6 +12,10 @@ fun View.visible() {
 }
 
 fun View.invisible() {
+    this.visibility = View.INVISIBLE
+}
+
+fun View.gone() {
     this.visibility = View.GONE
 }
 

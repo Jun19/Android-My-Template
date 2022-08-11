@@ -1,123 +1,80 @@
-package com.jun.common.utils;
+package com.jun.common.utils
 
+import android.R
+import android.annotation.SuppressLint
+import android.annotation.TargetApi
+import android.app.Activity
+import android.content.Context
+import android.content.res.Configuration
+import android.content.res.Resources
+import android.graphics.drawable.Drawable
+import android.os.Build
+import android.util.DisplayMetrics
+import android.util.TypedValue
+import android.view.*
+import android.widget.FrameLayout
+import java.lang.reflect.Method
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.app.Activity;
-import android.content.Context;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
+class SystemBarTintManager @SuppressLint("ResourceType") @TargetApi(19) constructor(activity: Activity) {
+    companion object {
+        /**
+         * The default system bar tint color value.
+         */
+        const val DEFAULT_TINT_COLOR = -0x67000000
+        private var sNavBarOverride: String? = null
 
-import java.lang.reflect.Method;
-
-public class SystemBarTintManager {
-    /**
-     * The default system bar tint color value.
-     */
-    public static final int DEFAULT_TINT_COLOR = 0x99000000;
-    private static String sNavBarOverride;
-
-    static {
-        // Android allows a system property to override the presence of the navigation bar.
-        // Used by the emulator.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            try {
-                Class c = Class.forName("android.os.SystemProperties");
-                Method m = c.getDeclaredMethod("get", String.class);
-                m.setAccessible(true);
-                sNavBarOverride = (String) m.invoke(null, "qemu.hw.mainkeys");
-            } catch (Throwable e) {
-                sNavBarOverride = null;
+        init {
+            // Android allows a system property to override the presence of the navigation bar.
+            // Used by the emulator.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                try {
+                    val c = Class.forName("android.os.SystemProperties")
+                    val m: Method =
+                        c.getDeclaredMethod("get", String::class.java)
+                    m.setAccessible(true)
+                    sNavBarOverride = m.invoke(null, "qemu.hw.mainkeys") as String
+                } catch (e: Throwable) {
+                    sNavBarOverride = null
+                }
             }
         }
     }
 
-    private final SystemBarConfig mConfig;
-    private boolean mStatusBarAvailable;
-    private boolean mNavBarAvailable;
-    private boolean mStatusBarTintEnabled;
-    private boolean mNavBarTintEnabled;
-    private View mStatusBarTintView;
-    private View mNavBarTintView;
-
     /**
-     * Constructor. Call this in the host activity onCreate method after its
-     * content view has been set. You should always create new instances when
-     * the host activity is recreated.
+     * Get the system bar configuration.
      *
-     * @param activity The host activity.
+     * @return The system bar configuration for the current device configuration.
      */
-    @SuppressLint("ResourceType")
-    @TargetApi(19)
-    public SystemBarTintManager(Activity activity) {
+    val config: SystemBarConfig
+    private var mStatusBarAvailable = false
+    private var mNavBarAvailable = false
+    private var mStatusBarTintEnabled = false
 
-        Window win = activity.getWindow();
-        ViewGroup decorViewGroup = (ViewGroup) win.getDecorView();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            // check theme attrs
-            int[] attrs = {android.R.attr.windowTranslucentStatus,
-                    android.R.attr.windowTranslucentNavigation};
-            TypedArray a = activity.obtainStyledAttributes(attrs);
-            try {
-                mStatusBarAvailable = a.getBoolean(0, false);
-                mNavBarAvailable = a.getBoolean(1, false);
-            } finally {
-                a.recycle();
-            }
-
-            // check window flags
-            WindowManager.LayoutParams winParams = win.getAttributes();
-            int bits = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
-            if ((winParams.flags & bits) != 0) {
-                mStatusBarAvailable = true;
-            }
-            bits = WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
-            if ((winParams.flags & bits) != 0) {
-                mNavBarAvailable = true;
-            }
-        }
-
-        mConfig = new SystemBarConfig(activity, mStatusBarAvailable, mNavBarAvailable);
-        // device might not have virtual navigation keys
-        if (!mConfig.hasNavigtionBar()) {
-            mNavBarAvailable = false;
-        }
-
-        if (mStatusBarAvailable) {
-            setupStatusBarView(activity, decorViewGroup);
-        }
-        if (mNavBarAvailable) {
-            setupNavBarView(activity, decorViewGroup);
-        }
-
-    }
+    /**
+     * Is tinting enabled for the system navigation bar?
+     *
+     * @return True if enabled, False otherwise.
+     */
+    var isNavBarTintEnabled = false
+        private set
+    private var mStatusBarTintView: View? = null
+    private var mNavBarTintView: View? = null
 
     /**
      * Enable tinting of the system navigation bar.
-     * <p>
+     *
+     *
      * If the platform does not have soft navigation keys, is running Jelly Bean
      * or earlier, or translucent system UI modes have not been enabled in either
      * the theme or via window flags, then this method does nothing.
      *
      * @param enabled True to enable tinting, false to disable it (default).
      */
-    public void setNavigationBarTintEnabled(boolean enabled) {
-        mNavBarTintEnabled = enabled;
+    fun setNavigationBarTintEnabled(enabled: Boolean) {
+        isNavBarTintEnabled = enabled
         if (mNavBarAvailable) {
-            mNavBarTintView.setVisibility(enabled ? View.VISIBLE : View.GONE);
+            mNavBarTintView!!.visibility =
+                if (enabled) View.VISIBLE else View.GONE
         }
     }
 
@@ -126,9 +83,9 @@ public class SystemBarTintManager {
      *
      * @param color The color of the background tint.
      */
-    public void setTintColor(int color) {
-        setStatusBarTintColor(color);
-        setNavigationBarTintColor(color);
+    fun setTintColor(color: Int) {
+        setStatusBarTintColor(color)
+        setNavigationBarTintColor(color)
     }
 
     /**
@@ -136,9 +93,9 @@ public class SystemBarTintManager {
      *
      * @param res The identifier of the resource.
      */
-    public void setTintResource(int res) {
-        setStatusBarTintResource(res);
-        setNavigationBarTintResource(res);
+    fun setTintResource(res: Int) {
+        setStatusBarTintResource(res)
+        setNavigationBarTintResource(res)
     }
 
     /**
@@ -146,9 +103,9 @@ public class SystemBarTintManager {
      *
      * @param drawable The drawable to use as the background, or null to remove it.
      */
-    public void setTintDrawable(Drawable drawable) {
-        setStatusBarTintDrawable(drawable);
-        setNavigationBarTintDrawable(drawable);
+    fun setTintDrawable(drawable: Drawable?) {
+        setStatusBarTintDrawable(drawable)
+        setNavigationBarTintDrawable(drawable)
     }
 
     /**
@@ -156,9 +113,9 @@ public class SystemBarTintManager {
      *
      * @param alpha The alpha to use
      */
-    public void setTintAlpha(float alpha) {
-        setStatusBarAlpha(alpha);
-        setNavigationBarAlpha(alpha);
+    fun setTintAlpha(alpha: Float) {
+        setStatusBarAlpha(alpha)
+        setNavigationBarAlpha(alpha)
     }
 
     /**
@@ -166,9 +123,9 @@ public class SystemBarTintManager {
      *
      * @param color The color of the background tint.
      */
-    public void setStatusBarTintColor(int color) {
+    fun setStatusBarTintColor(color: Int) {
         if (mStatusBarAvailable) {
-            mStatusBarTintView.setBackgroundColor(color);
+            mStatusBarTintView!!.setBackgroundColor(color)
         }
     }
 
@@ -177,9 +134,9 @@ public class SystemBarTintManager {
      *
      * @param res The identifier of the resource.
      */
-    public void setStatusBarTintResource(int res) {
+    fun setStatusBarTintResource(res: Int) {
         if (mStatusBarAvailable) {
-            mStatusBarTintView.setBackgroundResource(res);
+            mStatusBarTintView!!.setBackgroundResource(res)
         }
     }
 
@@ -188,10 +145,9 @@ public class SystemBarTintManager {
      *
      * @param drawable The drawable to use as the background, or null to remove it.
      */
-    @SuppressWarnings("deprecation")
-    public void setStatusBarTintDrawable(Drawable drawable) {
+    fun setStatusBarTintDrawable(drawable: Drawable?) {
         if (mStatusBarAvailable) {
-            mStatusBarTintView.setBackgroundDrawable(drawable);
+            mStatusBarTintView!!.setBackgroundDrawable(drawable)
         }
     }
 
@@ -201,9 +157,9 @@ public class SystemBarTintManager {
      * @param alpha The alpha to use
      */
     @TargetApi(11)
-    public void setStatusBarAlpha(float alpha) {
+    fun setStatusBarAlpha(alpha: Float) {
         if (mStatusBarAvailable && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            mStatusBarTintView.setAlpha(alpha);
+            mStatusBarTintView!!.alpha = alpha
         }
     }
 
@@ -212,9 +168,9 @@ public class SystemBarTintManager {
      *
      * @param color The color of the background tint.
      */
-    public void setNavigationBarTintColor(int color) {
+    fun setNavigationBarTintColor(color: Int) {
         if (mNavBarAvailable) {
-            mNavBarTintView.setBackgroundColor(color);
+            mNavBarTintView!!.setBackgroundColor(color)
         }
     }
 
@@ -223,9 +179,9 @@ public class SystemBarTintManager {
      *
      * @param res The identifier of the resource.
      */
-    public void setNavigationBarTintResource(int res) {
+    fun setNavigationBarTintResource(res: Int) {
         if (mNavBarAvailable) {
-            mNavBarTintView.setBackgroundResource(res);
+            mNavBarTintView!!.setBackgroundResource(res)
         }
     }
 
@@ -234,10 +190,9 @@ public class SystemBarTintManager {
      *
      * @param drawable The drawable to use as the background, or null to remove it.
      */
-    @SuppressWarnings("deprecation")
-    public void setNavigationBarTintDrawable(Drawable drawable) {
+    fun setNavigationBarTintDrawable(drawable: Drawable?) {
         if (mNavBarAvailable) {
-            mNavBarTintView.setBackgroundDrawable(drawable);
+            mNavBarTintView!!.setBackgroundDrawable(drawable)
         }
     }
 
@@ -247,199 +202,199 @@ public class SystemBarTintManager {
      * @param alpha The alpha to use
      */
     @TargetApi(11)
-    public void setNavigationBarAlpha(float alpha) {
+    fun setNavigationBarAlpha(alpha: Float) {
         if (mNavBarAvailable && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            mNavBarTintView.setAlpha(alpha);
+            mNavBarTintView!!.alpha = alpha
         }
     }
-
-    /**
-     * Get the system bar configuration.
-     *
-     * @return The system bar configuration for the current device configuration.
-     */
-    public SystemBarConfig getConfig() {
-        return mConfig;
-    }
-
     /**
      * Is tinting enabled for the system status bar?
      *
      * @return True if enabled, False otherwise.
      */
-    public boolean isStatusBarTintEnabled() {
-        return mStatusBarTintEnabled;
-    }
-
     /**
      * Enable tinting of the system status bar.
-     * <p>
+     *
+     *
      * If the platform is running Jelly Bean or earlier, or translucent system
      * UI modes have not been enabled in either the theme or via window flags,
      * then this method does nothing.
      *
      * @param enabled True to enable tinting, false to disable it (default).
      */
-    public void setStatusBarTintEnabled(boolean enabled) {
-        mStatusBarTintEnabled = enabled;
-        if (mStatusBarAvailable) {
-            mStatusBarTintView.setVisibility(enabled ? View.VISIBLE : View.GONE);
+    var isStatusBarTintEnabled: Boolean
+        get() = mStatusBarTintEnabled
+        set(enabled) {
+            mStatusBarTintEnabled = enabled
+            if (mStatusBarAvailable) {
+                mStatusBarTintView!!.visibility = if (enabled) View.VISIBLE else View.GONE
+            }
         }
-    }
 
-    /**
-     * Is tinting enabled for the system navigation bar?
-     *
-     * @return True if enabled, False otherwise.
-     */
-    public boolean isNavBarTintEnabled() {
-        return mNavBarTintEnabled;
-    }
-
-    private void setupStatusBarView(Context context, ViewGroup decorViewGroup) {
-        mStatusBarTintView = new View(context);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, mConfig.getStatusBarHeight());
-        params.gravity = Gravity.TOP;
-        if (mNavBarAvailable && !mConfig.isNavigationAtBottom()) {
-            params.rightMargin = mConfig.getNavigationBarWidth();
+    private fun setupStatusBarView(context: Context, decorViewGroup: ViewGroup) {
+        mStatusBarTintView = View(context)
+        val params =
+            FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, config.statusBarHeight)
+        params.gravity = Gravity.TOP
+        if (mNavBarAvailable && !config.isNavigationAtBottom) {
+            params.rightMargin = config.navigationBarWidth
         }
-        mStatusBarTintView.setLayoutParams(params);
-        mStatusBarTintView.setBackgroundColor(DEFAULT_TINT_COLOR);
-        mStatusBarTintView.setVisibility(View.GONE);
-        decorViewGroup.addView(mStatusBarTintView);
+        mStatusBarTintView!!.layoutParams = params
+        mStatusBarTintView!!.setBackgroundColor(DEFAULT_TINT_COLOR)
+        mStatusBarTintView!!.visibility = View.GONE
+        decorViewGroup.addView(mStatusBarTintView)
     }
 
-    private void setupNavBarView(Context context, ViewGroup decorViewGroup) {
-        mNavBarTintView = new View(context);
-        FrameLayout.LayoutParams params;
-        if (mConfig.isNavigationAtBottom()) {
-            params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, mConfig.getNavigationBarHeight());
-            params.gravity = Gravity.BOTTOM;
+    private fun setupNavBarView(context: Context, decorViewGroup: ViewGroup) {
+        mNavBarTintView = View(context)
+        val params: FrameLayout.LayoutParams
+        if (config.isNavigationAtBottom) {
+            params = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                config.navigationBarHeight
+            )
+            params.gravity = Gravity.BOTTOM
         } else {
-            params = new FrameLayout.LayoutParams(mConfig.getNavigationBarWidth(), FrameLayout.LayoutParams.MATCH_PARENT);
-            params.gravity = Gravity.RIGHT;
+            params = FrameLayout.LayoutParams(
+                config.navigationBarWidth,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            params.gravity = Gravity.RIGHT
         }
-        mNavBarTintView.setLayoutParams(params);
-        mNavBarTintView.setBackgroundColor(DEFAULT_TINT_COLOR);
-        mNavBarTintView.setVisibility(View.GONE);
-        decorViewGroup.addView(mNavBarTintView);
+        mNavBarTintView!!.layoutParams = params
+        mNavBarTintView!!.setBackgroundColor(DEFAULT_TINT_COLOR)
+        mNavBarTintView!!.visibility = View.GONE
+        decorViewGroup.addView(mNavBarTintView)
     }
 
     /**
      * Class which describes system bar sizing and other characteristics for the current
      * device configuration.
      */
-    public static class SystemBarConfig {
+    class SystemBarConfig(
+        activity: Activity,
+        translucentStatusBar: Boolean,
+        traslucentNavBar: Boolean
+    ) {
+        private val mTranslucentStatusBar: Boolean
+        private val mTranslucentNavBar: Boolean
 
-        private static final String STATUS_BAR_HEIGHT_RES_NAME = "status_bar_height";
-        private static final String NAV_BAR_HEIGHT_RES_NAME = "navigation_bar_height";
-        private static final String NAV_BAR_HEIGHT_LANDSCAPE_RES_NAME = "navigation_bar_height_landscape";
-        private static final String NAV_BAR_WIDTH_RES_NAME = "navigation_bar_width";
-        private static final String SHOW_NAV_BAR_RES_NAME = "config_showNavigationBar";
+        /**
+         * Get the height of the system status bar.
+         *
+         * @return The height of the status bar (in pixels).
+         */
+        val statusBarHeight: Int
 
-        private final boolean mTranslucentStatusBar;
-        private final boolean mTranslucentNavBar;
-        private final int mStatusBarHeight;
-        private final int mActionBarHeight;
-        private final boolean mHasNavigationBar;
-        private final int mNavigationBarHeight;
-        private final int mNavigationBarWidth;
-        private final boolean mInPortrait;
-        private final float mSmallestWidthDp;
+        /**
+         * Get the height of the action bar.
+         *
+         * @return The height of the action bar (in pixels).
+         */
+        val actionBarHeight: Int
+        private val mHasNavigationBar: Boolean
 
-        private SystemBarConfig(Activity activity, boolean translucentStatusBar, boolean traslucentNavBar) {
-            Resources res = activity.getResources();
-            mInPortrait = (res.getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
-            mSmallestWidthDp = getSmallestWidthDp(activity);
-            mStatusBarHeight = getInternalDimensionSize(res, STATUS_BAR_HEIGHT_RES_NAME);
-            mActionBarHeight = getActionBarHeight(activity);
-            mNavigationBarHeight = getNavigationBarHeight(activity);
-            mNavigationBarWidth = getNavigationBarWidth(activity);
-            mHasNavigationBar = (mNavigationBarHeight > 0);
-            mTranslucentStatusBar = translucentStatusBar;
-            mTranslucentNavBar = traslucentNavBar;
-        }
+        /**
+         * Get the height of the system navigation bar.
+         *
+         * @return The height of the navigation bar (in pixels). If the device does not have
+         * soft navigation keys, this will always return 0.
+         */
+        val navigationBarHeight: Int
+
+        /**
+         * Get the width of the system navigation bar when it is placed vertically on the screen.
+         *
+         * @return The width of the navigation bar (in pixels). If the device does not have
+         * soft navigation keys, this will always return 0.
+         */
+        val navigationBarWidth: Int
+        private val mInPortrait: Boolean
+        private val mSmallestWidthDp: Float
 
         @TargetApi(14)
-        private int getActionBarHeight(Context context) {
-            int result = 0;
+        private fun getActionBarHeight(context: Context): Int {
+            var result = 0
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                TypedValue tv = new TypedValue();
-                context.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true);
-                result = TypedValue.complexToDimensionPixelSize(tv.data, context.getResources().getDisplayMetrics());
+                val tv = TypedValue()
+                context.theme.resolveAttribute(R.attr.actionBarSize, tv, true)
+                result = TypedValue.complexToDimensionPixelSize(
+                    tv.data,
+                    context.resources.displayMetrics
+                )
             }
-            return result;
+            return result
         }
 
         @TargetApi(14)
-        private int getNavigationBarHeight(Context context) {
-            Resources res = context.getResources();
-            int result = 0;
+        private fun getNavigationBarHeight(context: Context): Int {
+            val res = context.resources
+            val result = 0
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
                 if (hasNavBar(context)) {
-                    String key;
-                    if (mInPortrait) {
-                        key = NAV_BAR_HEIGHT_RES_NAME;
+                    val key: String
+                    key = if (mInPortrait) {
+                        NAV_BAR_HEIGHT_RES_NAME
                     } else {
-                        key = NAV_BAR_HEIGHT_LANDSCAPE_RES_NAME;
+                        NAV_BAR_HEIGHT_LANDSCAPE_RES_NAME
                     }
-                    return getInternalDimensionSize(res, key);
+                    return getInternalDimensionSize(res, key)
                 }
             }
-            return result;
+            return result
         }
 
         @TargetApi(14)
-        private int getNavigationBarWidth(Context context) {
-            Resources res = context.getResources();
-            int result = 0;
+        private fun getNavigationBarWidth(context: Context): Int {
+            val res = context.resources
+            val result = 0
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
                 if (hasNavBar(context)) {
-                    return getInternalDimensionSize(res, NAV_BAR_WIDTH_RES_NAME);
+                    return getInternalDimensionSize(res, NAV_BAR_WIDTH_RES_NAME)
                 }
             }
-            return result;
+            return result
         }
 
         @TargetApi(14)
-        private boolean hasNavBar(Context context) {
-            Resources res = context.getResources();
-            int resourceId = res.getIdentifier(SHOW_NAV_BAR_RES_NAME, "bool", "android");
-            if (resourceId != 0) {
-                boolean hasNav = res.getBoolean(resourceId);
+        private fun hasNavBar(context: Context): Boolean {
+            val res = context.resources
+            val resourceId = res.getIdentifier(SHOW_NAV_BAR_RES_NAME, "bool", "android")
+            return if (resourceId != 0) {
+                var hasNav = res.getBoolean(resourceId)
                 // check override flag (see static block)
-                if ("1".equals(sNavBarOverride)) {
-                    hasNav = false;
-                } else if ("0".equals(sNavBarOverride)) {
-                    hasNav = true;
+                if ("1" == sNavBarOverride) {
+                    hasNav = false
+                } else if ("0" == sNavBarOverride) {
+                    hasNav = true
                 }
-                return hasNav;
+                hasNav
             } else { // fallback
-                return !ViewConfiguration.get(context).hasPermanentMenuKey();
+                !ViewConfiguration.get(context).hasPermanentMenuKey()
             }
         }
 
-        private int getInternalDimensionSize(Resources res, String key) {
-            int result = 0;
-            int resourceId = res.getIdentifier(key, "dimen", "android");
+        private fun getInternalDimensionSize(res: Resources, key: String): Int {
+            var result = 0
+            val resourceId = res.getIdentifier(key, "dimen", "android")
             if (resourceId > 0) {
-                result = res.getDimensionPixelSize(resourceId);
+                result = res.getDimensionPixelSize(resourceId)
             }
-            return result;
+            return result
         }
 
         @SuppressLint("NewApi")
-        private float getSmallestWidthDp(Activity activity) {
-            DisplayMetrics metrics = new DisplayMetrics();
+        private fun getSmallestWidthDp(activity: Activity): Float {
+            val metrics = DisplayMetrics()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                activity.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+                activity.windowManager.defaultDisplay.getRealMetrics(metrics)
             } else {
                 // TODO this is not correct, but we don't really care pre-kitkat
-                activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                activity.windowManager.defaultDisplay.getMetrics(metrics)
             }
-            float widthDp = metrics.widthPixels / metrics.density;
-            float heightDp = metrics.heightPixels / metrics.density;
-            return Math.min(widthDp, heightDp);
+            val widthDp = metrics.widthPixels / metrics.density
+            val heightDp = metrics.heightPixels / metrics.density
+            return Math.min(widthDp, heightDp)
         }
 
         /**
@@ -449,55 +404,16 @@ public class SystemBarTintManager {
          *
          * @return True if navigation should appear at the bottom of the screen, False otherwise.
          */
-        public boolean isNavigationAtBottom() {
-            return (mSmallestWidthDp >= 600 || mInPortrait);
-        }
-
-        /**
-         * Get the height of the system status bar.
-         *
-         * @return The height of the status bar (in pixels).
-         */
-        public int getStatusBarHeight() {
-            return mStatusBarHeight;
-        }
-
-        /**
-         * Get the height of the action bar.
-         *
-         * @return The height of the action bar (in pixels).
-         */
-        public int getActionBarHeight() {
-            return mActionBarHeight;
-        }
+        val isNavigationAtBottom: Boolean
+            get() = mSmallestWidthDp >= 600 || mInPortrait
 
         /**
          * Does this device have a system navigation bar?
          *
          * @return True if this device uses soft key navigation, False otherwise.
          */
-        public boolean hasNavigtionBar() {
-            return mHasNavigationBar;
-        }
-
-        /**
-         * Get the height of the system navigation bar.
-         *
-         * @return The height of the navigation bar (in pixels). If the device does not have
-         * soft navigation keys, this will always return 0.
-         */
-        public int getNavigationBarHeight() {
-            return mNavigationBarHeight;
-        }
-
-        /**
-         * Get the width of the system navigation bar when it is placed vertically on the screen.
-         *
-         * @return The width of the navigation bar (in pixels). If the device does not have
-         * soft navigation keys, this will always return 0.
-         */
-        public int getNavigationBarWidth() {
-            return mNavigationBarWidth;
+        fun hasNavigtionBar(): Boolean {
+            return mHasNavigationBar
         }
 
         /**
@@ -506,8 +422,8 @@ public class SystemBarTintManager {
          * @param withActionBar True to include the height of the action bar, False otherwise.
          * @return The layout inset (in pixels).
          */
-        public int getPixelInsetTop(boolean withActionBar) {
-            return (mTranslucentStatusBar ? mStatusBarHeight : 0) + (withActionBar ? mActionBarHeight : 0);
+        fun getPixelInsetTop(withActionBar: Boolean): Int {
+            return (if (mTranslucentStatusBar) statusBarHeight else 0) + if (withActionBar) actionBarHeight else 0
         }
 
         /**
@@ -515,26 +431,92 @@ public class SystemBarTintManager {
          *
          * @return The layout inset (in pixels).
          */
-        public int getPixelInsetBottom() {
-            if (mTranslucentNavBar && isNavigationAtBottom()) {
-                return mNavigationBarHeight;
+        val pixelInsetBottom: Int
+            get() = if (mTranslucentNavBar && isNavigationAtBottom) {
+                navigationBarHeight
             } else {
-                return 0;
+                0
             }
-        }
 
         /**
          * Get the layout inset for any system UI that appears at the right of the screen.
          *
          * @return The layout inset (in pixels).
          */
-        public int getPixelInsetRight() {
-            if (mTranslucentNavBar && !isNavigationAtBottom()) {
-                return mNavigationBarWidth;
+        val pixelInsetRight: Int
+            get() = if (mTranslucentNavBar && !isNavigationAtBottom) {
+                navigationBarWidth
             } else {
-                return 0;
+                0
             }
+
+        companion object {
+            private const val STATUS_BAR_HEIGHT_RES_NAME = "status_bar_height"
+            private const val NAV_BAR_HEIGHT_RES_NAME = "navigation_bar_height"
+            private const val NAV_BAR_HEIGHT_LANDSCAPE_RES_NAME = "navigation_bar_height_landscape"
+            private const val NAV_BAR_WIDTH_RES_NAME = "navigation_bar_width"
+            private const val SHOW_NAV_BAR_RES_NAME = "config_showNavigationBar"
         }
 
+        init {
+            val res = activity.resources
+            mInPortrait = res.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+            mSmallestWidthDp = getSmallestWidthDp(activity)
+            statusBarHeight = getInternalDimensionSize(res, STATUS_BAR_HEIGHT_RES_NAME)
+            actionBarHeight = getActionBarHeight(activity)
+            navigationBarHeight = getNavigationBarHeight(activity)
+            navigationBarWidth = getNavigationBarWidth(activity)
+            mHasNavigationBar = navigationBarHeight > 0
+            mTranslucentStatusBar = translucentStatusBar
+            mTranslucentNavBar = traslucentNavBar
+        }
+    }
+
+    /**
+     * Constructor. Call this in the host activity onCreate method after its
+     * content view has been set. You should always create new instances when
+     * the host activity is recreated.
+     *
+     * @param activity The host activity.
+     */
+    init {
+        val win = activity.window
+        val decorViewGroup = win.decorView as ViewGroup
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            // check theme attrs
+            val attrs = intArrayOf(
+                R.attr.windowTranslucentStatus,
+                R.attr.windowTranslucentNavigation
+            )
+            val a = activity.obtainStyledAttributes(attrs)
+            try {
+                mStatusBarAvailable = a.getBoolean(0, false)
+                mNavBarAvailable = a.getBoolean(1, false)
+            } finally {
+                a.recycle()
+            }
+
+            // check window flags
+            val winParams = win.attributes
+            var bits = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+            if (winParams.flags and bits != 0) {
+                mStatusBarAvailable = true
+            }
+            bits = WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+            if (winParams.flags and bits != 0) {
+                mNavBarAvailable = true
+            }
+        }
+        config = SystemBarConfig(activity, mStatusBarAvailable, mNavBarAvailable)
+        // device might not have virtual navigation keys
+        if (!config.hasNavigtionBar()) {
+            mNavBarAvailable = false
+        }
+        if (mStatusBarAvailable) {
+            setupStatusBarView(activity, decorViewGroup)
+        }
+        if (mNavBarAvailable) {
+            setupNavBarView(activity, decorViewGroup)
+        }
     }
 }
