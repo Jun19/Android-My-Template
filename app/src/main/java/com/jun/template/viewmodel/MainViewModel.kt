@@ -2,11 +2,10 @@ package com.jun.template.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.jun.common.base.BaseViewModel
-import com.jun.template.data.dto.Resource
+import com.jun.template.common.base.BaseViewModel
+import com.jun.template.common.model.Resource
+import com.jun.template.data.entity.Temp
 import com.jun.template.data.repositorysource.TempRepository
-import com.jun.template.data.vo.Temp
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**

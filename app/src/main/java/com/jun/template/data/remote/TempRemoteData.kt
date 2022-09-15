@@ -1,11 +1,11 @@
 package com.jun.template.data.remote
 
-import com.jun.common.exception.DataException
-import com.jun.common.net.NetworkHandler
+import com.jun.template.common.exception.DataException
+import com.jun.template.common.model.Resource
+import com.jun.template.common.net.NetworkHandler
 import com.jun.template.data.datasource.TempDataSource
-import com.jun.template.data.dto.Resource
+import com.jun.template.data.entity.Temp
 import com.jun.template.data.remote.api.TempService
-import com.jun.template.data.vo.Temp
 
 /**
  * Temp远程服务

@@ -1,7 +1,7 @@
 package com.jun.template.data.datasource
 
-import com.jun.template.data.dto.Resource
-import com.jun.template.data.vo.Temp
+import com.jun.template.common.model.Resource
+import com.jun.template.data.entity.Temp
 
 interface TempDataSource {
 

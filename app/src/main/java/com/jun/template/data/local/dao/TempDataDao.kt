@@ -2,7 +2,7 @@ package com.jun.template.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.jun.template.data.vo.Temp
+import com.jun.template.data.entity.Temp
 
 /**
  * Temp interface

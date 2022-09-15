@@ -1,8 +1,8 @@
 package com.jun.template.di
 
-import com.jun.common.Constants
-import com.jun.common.net.NetworkHandler
-import com.jun.common.utils.L
+import com.jun.template.common.Constants
+import com.jun.template.common.net.NetworkHandler
+import com.jun.template.common.utils.L
 import com.jun.template.data.local.AppDatabase
 import com.jun.template.data.local.TempLocalData
 import com.jun.template.data.remote.TempRemoteData

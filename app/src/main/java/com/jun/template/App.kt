@@ -2,10 +2,10 @@ package com.jun.template
 
 import android.app.Application
 import androidx.multidex.MultiDex
-import com.jun.common.Constants
-import com.jun.common.utils.ActivityLifecycleTracker
-import com.jun.common.utils.MMKVUtils
-import com.jun.common.utils.Preference
+import com.jun.template.common.Constants
+import com.jun.template.common.utils.ActivityLifecycleTracker
+import com.jun.template.common.utils.MMKVUtils
+import com.jun.template.common.utils.Preference
 import com.jun.template.di.allModules
 import com.orhanobut.logger.AndroidLogAdapter
 import com.orhanobut.logger.FormatStrategy

@@ -1,10 +1,10 @@
 package com.jun.template.ui
 
-import com.jun.common.base.BaseVBActivity
-import com.jun.common.extension.observe
-import com.jun.common.utils.UpdateUtil
-import com.jun.template.data.dto.Resource
-import com.jun.template.data.vo.Temp
+import com.jun.template.common.base.BaseVBActivity
+import com.jun.template.common.extension.observe
+import com.jun.template.common.model.Resource
+import com.jun.template.common.utils.UpdateUtil
+import com.jun.template.data.entity.Temp
 import com.jun.template.databinding.ActivityMainBinding
 import com.jun.template.viewmodel.MainViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel

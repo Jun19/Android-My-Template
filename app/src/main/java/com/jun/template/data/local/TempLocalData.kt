@@ -1,10 +1,10 @@
 package com.jun.template.data.local
 
-import com.jun.common.exception.DataException
+import com.jun.template.common.exception.DataException
+import com.jun.template.common.model.Resource
 import com.jun.template.data.datasource.TempDataSource
-import com.jun.template.data.dto.Resource
+import com.jun.template.data.entity.Temp
 import com.jun.template.data.local.dao.TempDataDao
-import com.jun.template.data.vo.Temp
 
 /**
  * Temp本地数据

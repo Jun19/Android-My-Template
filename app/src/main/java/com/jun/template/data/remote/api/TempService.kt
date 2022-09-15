@@ -1,6 +1,6 @@
 package com.jun.template.data.remote.api
 
-import com.jun.template.data.vo.Temp
+import com.jun.template.data.entity.Temp
 import retrofit2.Retrofit
 
 /**
