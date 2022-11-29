@@ -4,8 +4,7 @@ import android.app.Application
 import androidx.multidex.MultiDex
 import com.jun.template.common.Constants
 import com.jun.template.common.utils.ActivityLifecycleTracker
-import com.jun.template.common.utils.MMKVUtils
-import com.jun.template.common.utils.Preference
+import com.jun.template.common.utils.persistence.Preference
 import com.jun.template.di.allModules
 import com.orhanobut.logger.AndroidLogAdapter
 import com.orhanobut.logger.FormatStrategy
@@ -57,7 +56,6 @@ class App :Application() {
 
     private fun initPreference() {
         // 初始化MMKV
-        MMKVUtils.initialize(this)
         Preference.init(this, Constants.PREFERENCE_NAME)
     }
 

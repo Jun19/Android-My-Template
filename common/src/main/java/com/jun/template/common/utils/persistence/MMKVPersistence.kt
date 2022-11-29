@@ -1,16 +1,11 @@
-package com.jun.template.common.utils
+package com.jun.template.common.utils.persistence
 
-import android.content.Context
 import android.os.Parcelable
 import com.tencent.mmkv.MMKV
 import java.util.*
 
-object MMKVUtils {
+class MMKVPersistence : BasePersistence {
     val mmkv: MMKV? by lazy { MMKV.defaultMMKV() }
-
-    fun initialize(context: Context) {
-        MMKV.initialize(context.applicationInfo.dataDir + "/mmkv/")
-    }
 
     fun put(key: String, value: Any?): Boolean {
         return when (value) {
@@ -23,6 +18,45 @@ object MMKVUtils {
             is ByteArray -> mmkv?.encode(key, value)!!
             else -> false
         }
+    }
+
+    /**
+     * 查找数据 返回给调用方法一个具体的对象
+     * 如果查找不到类型就采用反序列化方法来返回类型
+     * default是默认对象 以防止会返回空对象的异常
+     * 即如果name没有查找到value 就返回默认的序列化对象，然后经过反序列化返回
+     */
+    override fun <A> findPreference(name: String, default: A): A = with(mmkv!!) {
+        val res: Any = when (default) {
+            is Long -> getLong(name, default)
+            is String -> getString(name, default)
+            is Int -> getInt(name, default)
+            is Boolean -> getBoolean(name, default)
+            is Float -> getFloat(name, default)
+            else -> getString(name, serialize(default))?.let(this@MMKVPersistence::deSerialization)
+        }!!
+        res as A
+    }
+
+    override fun <A> putPreference(name: String, value: A) = with(mmkv!!) {
+        var a = when (value) {
+            is Long -> putLong(name, value)
+            is String -> putString(name, value)
+            is Int -> putInt(name, value)
+            is Boolean -> putBoolean(name, value)
+            is Float -> putFloat(name, value)
+            else -> putString(name, serialize(value))
+        }.commit()
+    }
+
+
+    override fun clearPreference() {
+        mmkv?.edit()?.clear()?.commit()
+
+    }
+
+    override fun clearPreference(key: String) {
+        mmkv?.edit()?.remove(key)?.commit()
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.jun.template.common
 
 import android.annotation.SuppressLint
-import com.jun.template.common.utils.Preference
+import com.jun.template.common.utils.persistence.Preference
 
 /**
  * 全局配置
